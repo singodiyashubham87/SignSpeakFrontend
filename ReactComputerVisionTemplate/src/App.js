@@ -4,8 +4,6 @@ import * as tf from "@tensorflow/tfjs";
 import Webcam from "react-webcam";
 import "./App.css";
 import { nextFrame } from "@tensorflow/tfjs";
-// 2. TODO - Import drawing utility here
-// e.g. import { drawRect } from "./utilities";
 import {drawRect} from "./utilities"; 
 
 function App() {
@@ -14,13 +12,11 @@ function App() {
 
   // Main function
   const runCoco = async () => {
-    // 3. TODO - Load network 
-    // e.g. const net = await cocossd.load();
-    // https://tensorflowjsrealtimemodel.s3.au-syd.cloud-object-storage.appdomain.cloud/model.json
-    const net = await tf.loadGraphModel('https://tensorflowjsrealtimemodel.s3.au-syd.cloud-object-storage.appdomain.cloud/model.json')
+    const net = await tf.loadGraphModel('/converted/model.json')
+    console.log("🚀 ~ runCoco ~ net:", net)
     
     //  Loop and detect hands
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       detect(net);
     }, 16.7);
   };
@@ -47,11 +43,10 @@ function App() {
 
       // 4. TODO - Make Detections
       const img = tf.browser.fromPixels(video)
-      const resized = tf.image.resizeBilinear(img, [640,480])
+      const resized = tf.image.resizeBilinear(img, [840,680])
       const casted = resized.cast('int32')
       const expanded = casted.expandDims(0)
       const obj = await net.executeAsync(expanded)
-      console.log(obj)
 
       const boxes = await obj[1].array()
       const classes = await obj[2].array()
@@ -60,8 +55,6 @@ function App() {
       // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
 
-      // 5. TODO - Update drawing utility
-      // drawSomething(obj, ctx)  
       requestAnimationFrame(()=>{drawRect(boxes[0], classes[0], scores[0], 0.8, videoWidth, videoHeight, ctx)}); 
 
       tf.dispose(img)
